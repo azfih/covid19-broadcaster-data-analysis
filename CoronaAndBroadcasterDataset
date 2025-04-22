@@ -1,0 +1,2081 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <limits.h>
+#include <sstream>
+#include <cstdlib>
+#include <cstring>
+using namespace std;
+int search[188];
+int searchSize = -1;
+int sort[188];
+int SortSize = -1;
+int Heap[188];
+int size = -1;
+
+void shiftUp(int);
+void shiftDown(int);
+void insertInHeap(int);
+void displayHeapRecord();
+void printArray(int[], int);
+int parent(int i)
+{
+    return (i - 1) / 2;
+}
+
+void insertInHeap(int p)
+{
+    size++;
+    Heap[size] = p;
+    shiftUp(size);
+}
+void shiftUp(int i)
+{
+    while (i > 0 && Heap[parent(i)] < Heap[i])
+    {
+        int temp = Heap[parent(i)];
+        Heap[parent(i)] = Heap[i];
+        Heap[i] = temp;
+        i = parent(i);
+    }
+}
+int dequeueFromHeap()
+{
+    int result = Heap[0];
+    Heap[0] = Heap[size];
+    size--;
+    shiftDown(0);
+    return result;
+}
+int leftChild(int i)
+{
+    return ((2 * i) + 1);
+}
+int rightChild(int i)
+{
+    return ((2 * i) + 2);
+}
+
+void shiftDown(int i)
+{
+    int maxIndex = i;
+    int l = leftChild(i);
+    if (l <= size && Heap[l] > Heap[maxIndex])
+    {
+        maxIndex = l;
+    }
+    int r = rightChild(i);
+    if (r <= size && Heap[r] > Heap[maxIndex])
+    {
+        maxIndex = r;
+    }
+    if (i != maxIndex)
+    {
+        int temp = Heap[i];
+        Heap[i] = Heap[maxIndex];
+        Heap[maxIndex] = temp;
+        shiftDown(maxIndex);
+    }
+}
+void displayHeapRecord()
+{
+    if (size == -1)
+    {
+        cout << "There is no record yet" << endl;
+    }
+    else
+    {
+        for (int i = 0; i <= size; i++)
+        {
+            cout << Heap[i] << " ";
+        }
+    }
+}
+
+struct Avl
+{
+    int key;
+    Avl *left = NULL;
+    Avl *right = NULL;
+    int height;
+};
+struct Avl *root = NULL;
+int max(int a, int b)
+{
+    if (a > b)
+    {
+        return a;
+    }
+    return b;
+}
+int height(Avl *n)
+{
+    if (n == NULL)
+    {
+        return 0;
+    }
+    return n->height;
+}
+int getBalance(Avl *node)
+{
+    if (node == NULL)
+    {
+        return 0;
+    }
+
+    return height(node->left) - height(node->right);
+}
+Avl *leftRotate(Avl *x)
+{
+    Avl *y = x->right;
+    Avl *z = y->left;
+
+    y->left = x;
+    x->right = z;
+
+    x->height = max(height(x->left), height(x->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    return y;
+}
+Avl *rightRotate(Avl *x)
+{
+    Avl *y = x->left;
+    Avl *z = y->right;
+
+    y->right = x;
+    x->left = z;
+
+    x->height = max(height(x->left), height(x->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    return y;
+}
+Avl *insertNode(Avl *node, int key)
+{
+    if (node == NULL)
+    {
+        Avl *curr = new Avl;
+        curr->key = key;
+        curr->left = NULL;
+        curr->right = NULL;
+        curr->height = 1;
+        node = curr;
+        return node;
+    }
+    if (key < node->key)
+    {
+        node->left = insertNode(node->left, key);
+    }
+    else if (key > node->key)
+    {
+        node->right = insertNode(node->right, key);
+    }
+    else
+    {
+        return node;
+    }
+
+    node->height = max(height(node->left), height(node->right)) + 1;
+    int balance = getBalance(node);
+    if (balance > 1 && key < node->left->key)
+    {
+        return rightRotate(node);
+    }
+    if (balance < -1 && key > node->right->key)
+    {
+        return leftRotate(node);
+    }
+    if (balance > 1 && key > node->left->key)
+    {
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+    if (balance < -1 && key < node->right->key)
+    {
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+    return node;
+}
+void inOrder(Avl *node)
+{
+    if (node != NULL)
+    {
+        inOrder(node->left);
+        cout << node->key << " ";
+
+        inOrder(node->right);
+    }
+}
+void InsertionSort(int arr[], int s)
+{
+    int key;
+    int j;
+    for (int i = 1; i < s; ++i)
+    {
+        key = arr[i];
+        j = i - 1;
+        while (j >= 0 && arr[j] > key)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+
+        arr[j + 1] = key;
+    }
+    int choice = -1;
+    do
+    {
+
+        cout << "press 1 to print array or 0 to exit: " << endl;
+        cin >> choice;
+        if (choice == 1)
+        {
+            printArray(arr, s);
+            break;
+        }
+        else if (choice != 0)
+        {
+            cout << "invalid " << endl;
+        }
+    } while (choice != 0);
+}
+void printArray(int array[], int s)
+{
+    for (int i = 0; i < s; i++)
+    {
+        cout << array[i] << "  ";
+    }
+    cout << endl;
+}
+int binarySearch(int arr[], int s, int target)
+{
+    int SI = 0;
+    int LI = s - 1;
+
+    while (SI <= LI)
+    {
+        int mid = (SI + LI) / 2;
+        if (arr[mid] == target)
+        {
+            return mid;
+        }
+        if (arr[mid] < target)
+        {
+            SI = mid + 1;
+        }
+        else
+        {
+            LI = mid - 1;
+        }
+    }
+    return -1;
+}
+
+struct Node
+{
+    string country;
+    int total;
+    int death;
+    int recovered;
+    int active;
+    string region;
+    Node *next = NULL;
+    Node *prev = NULL;
+};
+struct Node *head = NULL;
+struct Node *tail = NULL;
+struct tree
+{
+    string country;
+    int total;
+    int death;
+    int recovered;
+    int active;
+    string region;
+    tree *left = NULL;
+    tree *right = NULL;
+};
+struct QNode
+{
+    string country;
+    int total;
+    int death;
+    int recovered;
+    int active;
+    string region;
+    QNode *next;
+    QNode *prev;
+};
+class LinkedStack
+{
+private:
+    QNode *head1;
+
+public:
+    LinkedStack()
+    {
+        head1 = NULL;
+    }
+    void push(string country, int total, int death, int recovered, int active, string region)
+    {
+        QNode *new_node = new QNode();
+        new_node->country = country;
+        new_node->active = active;
+        new_node->total = total;
+        new_node->recovered = recovered;
+        new_node->region = region;
+        new_node->death = death;
+        new_node->next = NULL;
+        new_node->next = head1;
+        head1 = new_node;
+    }
+    void pop()
+    {
+        if (head1 == NULL)
+        {
+            cout << "Stack is empty" << endl;
+            return;
+        }
+
+        QNode *curr = head1;
+        head1 = curr->next;
+        delete curr;
+    }
+    Node *top()
+    {
+        return head;
+    }
+    bool empty()
+    {
+        if (head1 == NULL)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+};
+
+LinkedStack myStack1;
+LinkedStack myStack2;
+
+void Stack_Region(string r, LinkedStack &S)
+{
+    Node *ptr = head;
+    if (head != NULL)
+    {
+        while (ptr != NULL)
+        {
+
+            if (ptr->region == r)
+            {
+
+                S.push(ptr->country, ptr->total, ptr->death, ptr->recovered, ptr->active, ptr->region);
+            }
+            ptr = ptr->next;
+        }
+    }
+    else
+    {
+        cout << "List is empty" << endl;
+    }
+}
+// Find Statistics of specific Region
+void Statistic_Region(LinkedStack &S, int (&arr)[4])
+{
+    Node *curr = new Node;
+    int C = 0;
+    int D = 0;
+    int R = 0;
+    int A = 0;
+    while (!S.empty())
+    {
+        curr = S.top();
+        C = curr->total + C;
+        D = curr->death + D;
+        R = curr->recovered + R;
+        A = curr->active + A;
+        S.pop();
+    }
+    arr[0] = C;
+    arr[1] = D;
+    arr[2] = R;
+    arr[3] = A;
+}
+// print array containing data of regiom
+void display_array(int (&arr)[4])
+{
+    cout << "Total Confirmed Cases in Region=" << arr[0] << endl;
+    cout << "Total Deaths Reported in Region=" << arr[1] << endl;
+    cout << "Total Recovered Cases in Region=" << arr[2] << endl;
+    cout << "Total Active Cases in Region=" << arr[3] << endl;
+}
+// Compare two arrays containing data of regions
+void Compare(int (&arr1)[4], int (&arr2)[4])
+{
+    if (arr1[0] > arr2[0])
+    {
+        cout << "Region1 has greater number of confirmed cases than Region2" << endl;
+    }
+    else if (arr1[0] < arr2[0])
+    {
+        cout << "Region2 has greater number of confirmed cases than Region1" << endl;
+    }
+    else
+    {
+        cout << "Both Regions have same number of confirmed cases" << endl;
+    }
+    if (arr1[1] > arr2[1])
+    {
+        cout << "Region1 has greater number of Deaths than Region2" << endl;
+    }
+    else if (arr1[1] < arr2[1])
+    {
+        cout << "Region2 has greater number of Deaths than Region1" << endl;
+    }
+    else
+    {
+        cout << "Both Regions have same number of Deaths" << endl;
+    }
+    if (arr1[2] > arr2[2])
+    {
+        cout << "Region1 has greater number of Recovered cases than Region2" << endl;
+    }
+    else if (arr1[2] < arr2[2])
+    {
+        cout << "Region2 has greater number of Recovered cases than Region1" << endl;
+    }
+    else
+    {
+        cout << "Both Regions have same number of Recovered cases" << endl;
+    }
+    if (arr1[3] > arr2[3])
+    {
+        cout << "Region1 has greater number of Active cases than Region2" << endl;
+    }
+    else if (arr1[3] < arr2[3])
+    {
+        cout << "Region2 has greater number of Active cases than Region1" << endl;
+    }
+    else
+    {
+        cout << "Both Regions have same number of Active cases" << endl;
+    }
+}
+int array1[4];
+int array2[4];
+class queue1
+{
+private:
+    int head;
+    int tail;
+    int size;
+    Node **value;
+
+public:
+    queue1()
+    {
+        head = -1;
+        tail = -1;
+        value = new Node *[188];
+        size = 188;
+    }
+    void enqueueL(Node *p)
+    {
+
+        if ((tail + 1) % size == head)
+        {
+            cout << "Quene is full You cannot Take more order" << endl;
+        }
+        else
+        {
+            if (head == -1)
+            {
+                head = 0;
+                tail = 0;
+                value[tail] = p;
+            }
+            else if (value[head]->active < p->active)
+            {
+
+                if (head == 0)
+                {
+                    head = size - 1;
+                }
+                else
+                {
+                    head = (head - 1) % size;
+                }
+                value[head] = p;
+            }
+            else if (value[tail]->active > p->active)
+            {
+
+                tail = (tail + 1) % size;
+                value[tail] = p;
+            }
+            else
+            {
+
+                int k = (head + 1) % size;
+                int t = (tail + 1) % size;
+                int m = 0;
+                while (k != (tail + 1) % size)
+                {
+
+                    if (value[k]->active <= p->active)
+                    {
+
+                        m = k;
+
+                        break;
+                    }
+                    k = (k + 1) % size;
+                }
+                while (t != m)
+                {
+
+                    if (t == 0)
+                    {
+                        value[t] = value[size - 1];
+                    }
+                    else
+                    {
+                        value[t] = value[t - 1];
+                    }
+                    if (t == 0)
+                    {
+                        t = size - 1;
+                    }
+                    else
+                    {
+                        t--;
+                    }
+                }
+
+                tail = (tail + 1) % size;
+                value[m] = p;
+            }
+        }
+    }
+
+    void enqueueF(Node *p)
+    {
+        if (isFull())
+        {
+            cout << "Queue is full. You cannot take more orders." << endl;
+        }
+        else if (isEmpty())
+        {
+            head = tail = 0;
+            value[tail] = p;
+        }
+        else
+        {
+            if (value[head]->active < p->active)
+            {
+
+                head = (head - 1) % size;
+                value[head] = p;
+            }
+            else if (value[tail]->active > p->active)
+            {
+                tail = (tail + 1) % size;
+                value[tail] = p;
+            }
+            else
+            {
+                int k = head + 1;
+                int t = (tail + 1) % size;
+                int m = t;
+
+                while (k != tail + 1)
+                {
+                    if (value[k]->active < p->active)
+                    {
+                        m = k;
+                        break;
+                    }
+                    k++;
+                }
+
+                while (t != m)
+                {
+                    if (t == 0)
+                    {
+                        value[t] = value[size - 1];
+                    }
+                    else
+                    {
+                        value[t] = value[t - 1];
+                    }
+                    if (t == 0)
+                    {
+                        t = size - 1;
+                    }
+                    else
+                    {
+                        t--;
+                    }
+                }
+
+                tail = (tail + 1) % size;
+                value[m] = p;
+            }
+        }
+    }
+
+    Node *dequeueF()
+    {
+
+        if (head == tail)
+
+        {
+            int a = head;
+            head = tail = -1;
+
+            return value[a];
+        }
+        else
+        {
+            int a = head;
+            head = (head + 1) % size;
+
+            return value[a];
+        }
+    }
+    Node *dequeueL()
+    {
+
+        if (head == tail)
+
+        {
+
+            head = -1;
+            return value[tail];
+        }
+        else
+        {
+            if (tail == 0)
+            {
+                int a = tail;
+
+                tail = (size - 1) % size;
+
+                return value[a];
+            }
+            else
+            {
+                int a = tail;
+                tail = (tail - 1) % size;
+
+                return value[a];
+            }
+        }
+    }
+    bool isEmpty()
+    {
+        return head == -1;
+    }
+
+    bool isFull()
+    {
+        return (tail + 1) % size == head;
+    }
+};
+QNode *front1, *rear1;
+struct MyQueue1
+{
+    MyQueue1() { front1 = rear1 = NULL; }
+    QNode *front()
+    {
+
+        return front1;
+    }
+    void enQueue(string country, int total, int death, int recovered, int active, string region)
+    {
+        QNode *new_node = new QNode();
+        new_node->country = country;
+        new_node->active = active;
+        new_node->total = total;
+        new_node->recovered = recovered;
+        new_node->region = region;
+        new_node->death = death;
+        new_node->next = NULL;
+        QNode *p = front1;
+        if (rear1 == NULL)
+        {
+            front1 = rear1 = new_node;
+        }
+        else
+        {
+            while (p != NULL)
+            {
+                if (p->recovered < new_node->recovered)
+                {
+                    if (p == front1)
+                    {
+                        new_node->next = front1;
+                        front1 = new_node;
+                        break;
+                    }
+                    else
+                    {
+                        QNode *temp = search_before(p->recovered);
+                        new_node->next = temp->next;
+                        temp->next = new_node;
+                        break;
+                    }
+                }
+                else if (p == rear1 && p->recovered > new_node->recovered)
+                {
+                    p->next = new_node;
+                    rear1 = new_node;
+                }
+                p = p->next;
+            }
+        }
+    }
+    bool isempty()
+    {
+        return front1 == NULL;
+    }
+    void deQueue()
+    {
+        if (front1 == NULL)
+        {
+            return;
+        }
+
+        QNode *temp = front1;
+        front1 = front1->next;
+    }
+    QNode *search_before(int key)
+    {
+        QNode *p = front1;
+        QNode *k = NULL;
+        QNode *a;
+        while (p != NULL)
+        {
+            if (p->recovered == key)
+            {
+                a = k;
+                break;
+            }
+            else
+            {
+                a = NULL;
+            }
+            k = p;
+            p = p->next;
+        }
+        return a;
+    }
+};
+QNode *front, *rear;
+struct MyQueue
+{
+    MyQueue() { front = rear = NULL; }
+
+    void enQueue(string country, int total, int death, int recovered, int active, string region)
+    {
+        QNode *new_node = new QNode();
+        new_node->country = country;
+        new_node->active = active;
+        new_node->total = total;
+        new_node->recovered = recovered;
+        new_node->region = region;
+        new_node->death = death;
+        new_node->next = NULL;
+        QNode *p = front;
+        if (rear == NULL)
+        {
+            front = rear = new_node;
+        }
+        else
+        {
+            while (p != NULL)
+            {
+                if (p->active < new_node->active)
+                {
+                    if (p == front)
+                    {
+                        new_node->next = front;
+                        front = new_node;
+                        break;
+                    }
+                    else
+                    {
+                        QNode *temp = search_before(p->active);
+                        new_node->next = temp->next;
+                        temp->next = new_node;
+                        break;
+                    }
+                }
+                else if (p == rear && p->active > new_node->active)
+                {
+                    p->next = new_node;
+                    rear = new_node;
+                }
+                p = p->next;
+            }
+        }
+    }
+
+    void *deQueue()
+    {
+
+        QNode *temp = front;
+        front = front->next;
+
+        if (front == NULL)
+        {
+            rear = NULL;
+        }
+    }
+    QNode *search_before(int key)
+    {
+        QNode *p = front;
+        QNode *k = NULL;
+        QNode *a;
+        while (p != NULL)
+        {
+            if (p->active == key)
+            {
+                a = k;
+                break;
+            }
+            else
+            {
+                a = NULL;
+            }
+            k = p;
+            p = p->next;
+        }
+        return a;
+    }
+};
+MyQueue myQue1;
+
+void linked_to_queue()
+{
+    Node *pq = head;
+    while (pq != NULL)
+    {
+        myQue1.enQueue(pq->country, pq->total, pq->death, pq->recovered, pq->active, pq->region);
+        pq = pq->next;
+    }
+}
+void priority_activeCases()
+{
+    QNode *node = front;
+    cout << "------------Data of Countries on priority of Active Cases----------" << endl;
+    cout << "Country Name, Total Cases , Death , recovered ,Active,Region" << endl;
+    while (node != NULL)
+    {
+        cout << "Country:" << node->country << endl;
+        cout << "Active cases:" << node->active << endl;
+        cout << "_______________________" << endl;
+        node = node->next;
+    }
+}
+void print_levelWise(tree *root)
+{
+    int level = 0;
+    queue<tree *> que;
+    que.push(root);
+    while (!que.empty())
+    {
+        int size = que.size();
+        cout << "-------Level " << level << "--------" << endl;
+        for (int i = 0; i < size; i++)
+        {
+            tree *t = que.front();
+            que.pop();
+            cout << "Country:" << t->country << endl;
+            cout << "Death:" << t->death << endl
+                 << endl;
+
+            if (t->left != NULL)
+            {
+                que.push(t->left);
+            }
+            if (t->right != NULL)
+            {
+                que.push(t->right);
+            }
+        }
+        cout << "-------------------------------------------------" << endl;
+        level++;
+    }
+}
+
+void insert(tree *root, string country, int total, int death, int recovered, int active, string region)
+{
+    tree *prev = NULL;
+    while (root != NULL)
+    {
+        prev = root;
+        if (total == root->total)
+        {
+            return;
+        }
+        else if (total < root->total)
+        {
+            root = root->left;
+        }
+        else
+        {
+            root = root->right;
+        }
+    }
+    tree *ptr = new tree();
+    ptr->country = country;
+    ptr->active = active;
+    ptr->total = total;
+    ptr->recovered = recovered;
+    ptr->region = region;
+    ptr->death = death;
+    ptr->left = NULL;
+    ptr->right = NULL;
+
+    if (total < prev->total)
+    {
+        prev->left = ptr;
+    }
+    else
+    {
+        prev->right = ptr;
+    }
+}
+// adding nodes
+void addNode(string country, int total, int death, int recovered, int active, string region)
+{
+    // adding data to new node
+    Node *new_node = new Node;
+    new_node->country = country;
+    new_node->active = active;
+    new_node->total = total;
+    new_node->recovered = recovered;
+    new_node->region = region;
+    new_node->death = death;
+    new_node->next = NULL;
+    // empty list
+    if (head == NULL)
+    {
+        head = new_node;
+        tail = new_node;
+        new_node->next = NULL;
+        return;
+    }
+    // non empty
+    new_node->prev = tail;
+    tail->next = new_node;
+    tail = new_node;
+} // adding node function ends here
+
+// printing info about all movies
+void inorder(tree *ptr)
+{
+
+    if (ptr != NULL)
+    {
+
+        inorder(ptr->left);
+        cout << ptr->country << " , " << ptr->total << " , " << ptr->death << " , " << ptr->recovered << " , " << ptr->active << " , " << ptr->region << endl;
+        inorder(ptr->right);
+    }
+}
+void print()
+{
+    Node *ptr = head;
+    cout << "Country Name, Total Cases , Death , recovered ,Active,Region" << endl;
+    if (head != NULL)
+    {
+        while (ptr)
+        {
+            cout << ptr->country << " , " << ptr->total << " , " << ptr->death << " , " << ptr->recovered << " , " << ptr->active << " , " << ptr->region << endl;
+            ptr = ptr->next;
+        }
+    }
+    else
+    {
+        cout << "List is empty" << endl;
+    }
+} // printing function ends here
+
+// printing movies info only from a specific country
+void print(string country)
+{
+    Node *ptr = head;
+    cout << "Country Name, Total Cases , Death , recovered ,Active,Region" << endl;
+    if (head != NULL)
+    {
+        while (ptr)
+        {
+            if (ptr->country == country)
+            {
+                cout << ptr->country << " , " << ptr->total << " , " << ptr->death << " , " << ptr->recovered << " , " << ptr->active << " , " << ptr->region << endl;
+            }
+            ptr = ptr->next;
+        }
+    }
+    else
+    {
+        cout << "List is empty" << endl;
+    }
+} // printing movie of a country function ends here
+
+void printDeathGreater(int d)
+{
+    Node *ptr = head;
+    cout << "Country Name, Total Cases , Death , recovered ,Active,Region" << endl;
+    if (head != NULL)
+    {
+        while (ptr)
+        {
+            if (ptr->death > d)
+            {
+                cout << ptr->country << " , " << ptr->total << " , " << ptr->death << " , " << ptr->recovered << " , " << ptr->active << " , " << ptr->region << endl;
+            }
+            ptr = ptr->next;
+        }
+    }
+    else
+    {
+        cout << "List is empty" << endl;
+    }
+} // printing movie greater than duration function ends here
+
+// delete nodes having movie less than duration d
+void deleteLess(int d)
+{
+    Node *ptr = head;
+    while (ptr)
+    {
+        if (ptr->death < d)
+        {
+            // deleting
+            // one node and head or tail
+            if ((ptr == head || ptr == tail) && head == tail)
+            {
+                head = NULL;
+                tail = NULL;
+            }
+            // multiple nodes and head
+            else if (ptr == head)
+            {
+                head = head->next;
+                head->prev = NULL;
+            }
+            // multiple nodes and tail
+            else if (ptr == tail)
+            {
+                tail = tail->prev;
+                tail->next = NULL;
+            }
+            // neither head nor tail
+            else
+            {
+                ptr->prev->next = ptr->next;
+                ptr->next->prev = ptr->prev;
+            }
+        }
+        ptr = ptr->next;
+    }
+} // deleting nodes function ends here
+int distance(tree *root, int n)
+{
+    if (root->total == n)
+    {
+        return 0;
+    }
+    else if (root->total > n)
+    {
+        return (distance(root->left, n) + 1);
+    }
+    else
+    {
+        return (distance(root->right, n) + 1);
+    }
+}
+
+int distanceBtwTwo(tree *root, int n1, int n2)
+{
+    if (root == NULL)
+    {
+        return -1;
+    }
+    else if (root->total > n1 && root->total > n2)
+    {
+        return distanceBtwTwo(root->left, n1, n2);
+    }
+    else if (root->total < n1 && root->total < n2)
+    {
+        return distanceBtwTwo(root->right, n1, n2);
+    }
+    else if ((root->total >= n1 && root->total <= n2) || (root->total <= n1 && root->total >= n2))
+    {
+        return (distance(root, n1) + distance(root, n2));
+    }
+}
+tree *search2(tree *root, string name)
+{
+    if (root != NULL)
+    {
+        tree *found = search2(root->left, name);
+        if (found != NULL)
+        {
+            return found;
+        }
+        if (root->country == name)
+        {
+            cout << "Node found" << endl;
+            return root;
+        }
+        found = search2(root->right, name);
+        if (found != NULL)
+        {
+            return found;
+        }
+    }
+    return NULL;
+}
+struct HashNode
+{
+    int death;
+    string name;
+    HashNode *left = NULL;
+    HashNode *rihgt = NULL;
+    HashNode *next = NULL;
+};
+HashNode *hash1[188];
+
+void insertHashing()
+{
+    Node *p1 = head;
+    while (p1 != NULL)
+    {
+        int index = (p1->death) % 188;
+
+        if (hash1[index] == NULL)
+        {
+            HashNode *p = new HashNode();
+            p->name = p1->country;
+            p->death = p1->death;
+            hash1[index] = p;
+        }
+        else
+        {
+            HashNode *p = new HashNode();
+            p->name = p1->country;
+            p->death = p1->death;
+            HashNode *root = hash1[index];
+            HashNode *prev;
+            while (root != NULL)
+            {
+                prev = root;
+
+                if (p1->death <= root->death)
+                {
+                    root = root->left;
+                }
+                else
+                {
+                    root = root->rihgt;
+                }
+            }
+
+            if (p1->death <= prev->death)
+            {
+                prev->left = p;
+            }
+            else
+            {
+                prev->rihgt = p;
+            }
+        }
+        p1 = p1->next;
+    }
+}
+void searchHash(int death)
+{
+
+    if (hash1[death % 188]->death == death)
+    {
+        cout << "Node found" << endl;
+        return;
+    }
+    else
+    {
+        HashNode *p = hash1[death % 188];
+        while (p != NULL)
+        {
+            if (death > p->death)
+            {
+                p = p->rihgt;
+            }
+            else if (death < p->death)
+            {
+                p = p->left;
+            }
+            else
+            {
+                cout << "Node found" << endl;
+            }
+        }
+        cout << "Node not found" << endl;
+        return;
+    }
+}
+void emergency_Normal_Queue()
+{
+
+    queue1 q1 = queue1();
+    int o = 0;
+    Node *p = head;
+
+    while (p != NULL)
+    {
+
+        q1.enqueueL(p);
+        p = p->next;
+    }
+    cout << "------------" << endl;
+
+    int c;
+    bool a = true;
+    while (a)
+    {
+
+        cout << "1:Print country in crisis from present data and Remove from data" << endl;
+        cout << "2:Print country Having most normal condition from data and remove it from data" << endl;
+        cout << "3:Display data w.r.t to Most critical to most Normal" << endl;
+        cout << "4:Display data w.r.t to Most normal to Most critical " << endl;
+        cout << "Enter 0 to Exit" << endl;
+        cin >> c;
+        if (c == 1)
+        {
+            system("cls");
+            Node *p = q1.dequeueF();
+
+            cout << p->country << endl;
+            cout << " Active Cases :" << p->active << endl;
+            cout << "===================================" << endl;
+        }
+        if (c == 2)
+        {
+            system("cls");
+            Node *p = q1.dequeueL();
+            cout << p->country << endl;
+            cout << " Active Cases :" << p->active << endl;
+            cout << "===================================" << endl;
+        }
+        if (c == 3)
+        {
+            system("cls");
+            while (!q1.isEmpty())
+            {
+                Node *p = q1.dequeueF();
+                cout << p->country << endl;
+                cout << " Active Cases :" << p->active << endl;
+                cout << "===================================" << endl;
+            }
+            cout << "Now no data is present in Queue" << endl;
+        }
+        if (c == 4)
+        {
+            system("cls");
+            while (!q1.isEmpty())
+            {
+                Node *p = q1.dequeueL();
+                cout << p->country << endl;
+                cout << " Active Cases :" << p->active << endl;
+                cout << "===================================" << endl;
+            }
+            cout << "Now no data is present in Queue" << endl;
+        }
+        if (c == 0)
+        {
+            system("cls");
+            a = false;
+        }
+    }
+}
+void recovery()
+{
+    MyQueue1 q1 = MyQueue1();
+
+    Node *p = head;
+
+    while (p != NULL)
+    {
+        q1.enQueue(p->country, p->total, p->death, p->recovered, p->active, p->region);
+
+        p = p->next;
+    }
+    QNode *l = front1;
+    while (l != NULL)
+    {
+        cout << "Country:" << l->country << endl;
+        cout << "Recovered Cases:" << l->recovered << endl;
+        cout << "_______________________________________" << endl;
+        l = l->next;
+    }
+}
+int minvalue(vector<int> &value, vector<bool> &processed)
+{
+    int min = INT_MAX;
+    int vertex;
+    for (int i = 0; i < 7; i++)
+    {
+        if (processed[i] != true && value[i] < min)
+        {
+            min = value[i];
+            vertex = i;
+        }
+    }
+    return vertex;
+}
+
+struct broadData
+{
+    int time = INT_MAX;
+    int cost = INT_MAX;
+    int NoOfHouse = INT_MAX;
+};
+broadData Data[7][7];
+string nameOfBroadcaster[7] = {"Comcast", "ATT", "NTT Communications", "Vodafone", "Deutsche Telekom", "Verizon", "China Telecom"};
+void shortestPath_cost(int sourceIndex)
+{
+    string source = nameOfBroadcaster[sourceIndex];
+    string cross1[7];
+    string cross2;
+    int crossHouse = 0;
+    vector<int> houseData(7, 0);
+    vector<int> costF(7, INT_MAX);
+    vector<bool> visited(7, false);
+    for (int i = 0; i < 7; i++)
+    {
+        cross1[i] = nameOfBroadcaster[sourceIndex];
+    }
+    costF[sourceIndex] = 0;
+    visited[sourceIndex] = true;
+    int cross = 0;
+    for (int m = 0; m < 6; m++)
+    {
+
+        int min = INT_MAX;
+        int minI;
+        int house = 0;
+        for (int i = 0; i < 7; i++)
+        {
+
+            if ((min > Data[sourceIndex][i].cost) && Data[sourceIndex][i].cost != 0 && visited[i] == false && Data[sourceIndex][i].cost != INT_MAX && cross != INT_MAX)
+            {
+
+                min = Data[sourceIndex][i].cost;
+                minI = i;
+                house = Data[sourceIndex][i].NoOfHouse;
+            }
+        }
+        if (min == INT_MAX)
+        {
+            break;
+        }
+
+        cross += min;
+        cross2 += "->" + nameOfBroadcaster[minI];
+        sourceIndex = minI;
+        crossHouse += house;
+
+        for (int i = 0; i < 7; i++)
+        {
+
+            if (Data[sourceIndex][i].cost + cross < costF[i] && Data[sourceIndex][i].cost != INT_MAX && visited[i] != true && Data[sourceIndex][i].NoOfHouse + crossHouse > houseData[i] && Data[sourceIndex][i].NoOfHouse != INT_MAX)
+            {
+                cross1[i] = source + cross2;
+                costF[i] = Data[sourceIndex][i].cost + cross;
+                houseData[i] = Data[sourceIndex][i].NoOfHouse + crossHouse;
+            }
+        }
+
+        visited[sourceIndex] = true;
+    }
+    cout << "====================================================================" << endl;
+    for (int i = 0; i < 7; i++)
+    {
+
+        cout << "Path :" << cross1[i] << "->" << nameOfBroadcaster[i] << endl;
+        cout << "Cost :" << costF[i] << endl;
+        cout << "No of houses covered:" << houseData[i] << endl;
+        cout << "====================================================================" << endl;
+    }
+}
+void shortestPath(int sourceIndex)
+{
+    string source = nameOfBroadcaster[sourceIndex];
+
+    vector<int> costF(7, INT_MAX);
+    vector<bool> visited(7, false);
+
+    costF[sourceIndex] = 0;
+    visited[sourceIndex] = true;
+    int cross = 0;
+    for (int m = 0; m < 6; m++)
+    {
+
+        int min = INT_MAX;
+        int minI;
+
+        for (int i = 0; i < 7; i++)
+        {
+
+            if ((min > Data[sourceIndex][i].time) && Data[sourceIndex][i].time != 0 && visited[i] == false)
+            {
+
+                min = Data[sourceIndex][i].time;
+                minI = i;
+            }
+        }
+
+        cross += min;
+
+        sourceIndex = minI;
+
+        for (int i = 0; i < 7; i++)
+        {
+
+            if (Data[sourceIndex][i].time + cross < costF[i] && Data[sourceIndex][i].time != INT_MAX && visited[i] != true)
+            {
+
+                costF[i] = Data[sourceIndex][i].time + cross;
+            }
+        }
+
+        visited[sourceIndex] = true;
+    }
+    int max_time = 0;
+    for (int i = 0; i < 7; i++)
+    {
+        if (costF[i] > max_time)
+        {
+            max_time = costF[i];
+        }
+    }
+    cout << "===============================================================================" << endl;
+    cout << "Minimum time its Take to Reach from " << source << " to all nodes is:" << max_time << " seconds" << endl;
+    cout << "===============================================================================" << endl;
+}
+
+void add2D(string a1, string a2, int t, int h, int c)
+{
+    broadData b1 = broadData();
+    b1.time = t;
+    b1.cost = c;
+    b1.NoOfHouse = h;
+    int a11, a12;
+    for (int i = 0; i < 7; i++)
+    {
+        if (nameOfBroadcaster[i] == a1)
+        {
+            a11 = i;
+        }
+        if (nameOfBroadcaster[i] == a2)
+        {
+            a12 = i;
+        }
+    }
+
+    Data[a11][a12] = b1;
+    
+}
+void printData()
+{
+    cout << "Data[][]:" << endl;
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            cout << "From " << nameOfBroadcaster[i] << " to " << nameOfBroadcaster[j] << ":" << endl;
+            cout << "Time: " << Data[i][j].time << endl;
+            cout << "Cost: " << Data[i][j].cost << endl;
+            cout << "No. of Houses: " << Data[i][j].NoOfHouse << endl;
+            cout << endl;
+        }
+    }
+}
+void prims()
+{
+    int edges;
+    bool visited[7];
+    int totalTime = 0;
+    for (int i = 0; i < 7; i++)
+    {
+        visited[i] = false;
+    }
+    edges = 0;
+    visited[0] = true;
+    int x;
+    int y;
+    int minEdge = INT_MAX;
+    string minA;
+    string minB;
+    cout << "Minimum time for reaching signals between all broadcasters " << endl;
+    cout << "Edge     :     Weight" << endl
+         << endl;
+    while (edges < 7 - 1)
+    {
+        int min = INT_MAX;
+        x = 0;
+        y = 0;
+
+        for (int i = 0; i < 7; i++)
+        {
+            if (visited[i])
+            {
+                for (int j = 0; j < 7; j++)
+                {
+                    if (!visited[j] && Data[i][j].time < min)
+                    {
+                        min = Data[i][j].time;
+                        if (minEdge > min)
+                        {
+                            minEdge = min;
+                            minA = nameOfBroadcaster[i];
+                            minB = nameOfBroadcaster[j];
+                        }
+
+                        x = i;
+                        y = j;
+                    }
+                }
+            }
+        }
+        cout << nameOfBroadcaster[x] << " - " << nameOfBroadcaster[y] << " :   " << min << endl;
+        totalTime += min;
+        visited[y] = true;
+        edges++;
+    }
+
+    cout << "TotalTime to reach all houses between all broadcaster: " << totalTime << " seconds " << endl
+         << endl;
+    cout << "Minimum time was from " << minA << " to " << minB << " : " << minEdge << " seconds" << endl;
+
+    cout << "===================================================================================================" << endl;
+}
+void primsCost()
+{
+    int no_edge;
+    bool selected[7];
+    memset(selected, false, sizeof(selected));
+    no_edge = 0;
+    selected[0] = true;
+    int x;
+    int y;
+    int totalCost = 0;
+    int housescovered = 0;
+    int notcovered = 0;
+    int totalHouses = 69600;
+    cout << "Optimal locations for the towers to minimize the cost of reaching households." << endl;
+    cout << "BroadcasterA->BroadcasterB : Cost" << endl;
+    while (no_edge < 6)
+    {
+        int min = INT_MAX;
+        x = 0;
+        y = 0;
+        for (int i = 0; i < 7; i++)
+        {
+            if (selected[i])
+            {
+                for (int j = 0; j < 7; j++)
+                {
+                    if (!selected[j] && Data[i][j].cost < min)
+                    {
+                        min = Data[i][j].cost;
+                        x = i;
+                        y = j;
+                    }
+                }
+            }
+        }
+        housescovered += Data[x][y].NoOfHouse;
+        totalCost += min;
+        cout << nameOfBroadcaster[x] << " - " << nameOfBroadcaster[y] << " : " << min << endl;
+        selected[y] = true;
+        no_edge++;
+    }
+    cout << "Total Cost Required to establish the Network : " << totalCost << endl;
+    int a;
+    cout << "Select one option:" << endl;
+    cout << "1. Print the total Number of houses that will be covered in this network" << endl;
+    cout << "2. Is there need of further expansion of network?" << endl;
+    cin >> a;
+    if (a == 1)
+    {
+        cout << "Total houses that will be covered in the Network : " << housescovered << " Houses" << endl;
+    }
+    else if (a == 2)
+    {
+        notcovered = totalHouses - housescovered;
+        if (notcovered == 0)
+        {
+            cout << "Congratulations! All households are covered in the MST. No network expansion needed." << endl;
+        }
+        else
+        {
+            cout << "Network Expansion Recommendations:" << endl;
+            cout << "The following number of households are not covered in the MST:" << endl;
+            cout << notcovered << " Houses" << endl;
+            cout << "Consider expanding the broadcasting network to cover these households and maximize reach." << endl;
+        }
+    }
+}
+void BroadcasterManagement()
+
+{
+    ifstream fin;
+    fin.open("broadcaster.csv");
+    string line, word;
+    vector<string> lineData;
+    int lines = 0;
+    tree *pt = new tree();
+    while (!fin.eof() && lines < 33)
+    {
+        // reading data and adding to vector
+        getline(fin, line);
+        stringstream s(line);
+        while (getline(s, word, ','))
+        {
+            lineData.push_back(word);
+        }
+        // type casting duration from string to int
+        stringstream s1(lineData[2]);
+        stringstream s2(lineData[3]);
+        stringstream s3(lineData[4]);
+
+        int time;
+        int house;
+        int cost;
+
+        s1 >> time;
+        s2 >> house;
+        s3 >> cost;
+	
+        // adding data to linked list
+        if (lines != 0)
+        {
+
+            add2D(lineData[0], lineData[1], time, house, cost);
+        }
+        // clearing vector
+
+        lines++;
+        lineData.clear();
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            if (i == j)
+            {
+                broadData b1 = broadData();
+                b1.time = 0;
+                b1.cost = 0;
+                b1.NoOfHouse = 0;
+                Data[i][j] = b1;
+            }
+        }
+    }
+
+    bool flag = true;
+    int choice;
+    cout << "====================================================================================================================" << endl;
+    cout << "                             Welcome TO Internet Broadcasting Management System" << endl;
+    cout << "====================================================================================================================" << endl;
+    while (flag)
+    {
+        cout << " Choose A Option" << endl;
+        cout << "-------------------------------------------------------------------" << endl;
+        cout << "|                     Dijkstra's algorithm                        |" << endl;
+        cout << "-------------------------------------------------------------------" << endl;
+        cout << "1 :A Network broadcasting company want to test Network delay from one Broadcaster to All other broadcaster . Calulate Minimum time to reach all broadcaster from source enter by user" << endl;
+        cout << "2 :A Network broadcasting company want to ensure that maximum number of house get connection with minimum expenses use. Determine minimum path from source to each broadcaster with minimum cost involve and maximum house access " << endl;
+        cout << "-------------------------------------------------------------------" << endl;
+        cout << "|                     Prim's algorithm                             |" << endl;
+        cout << "-------------------------------------------------------------------" << endl;
+        cout << "3 :A telecommunications company is planning to establish a network of broadcast towers in a region. Determine the optimal locations for the towers to minimize the cost of reaching households." << endl;
+        cout << " 4 :A telecommunications company is planning to establish a network of broadcast towers in a region.Determine minimum time involve to Go through each broadcaster and edge between two nodes , and the broadcasters having minimum time than others " << endl;
+        cout << " Enter 0 to exit" << endl;
+        cin >> choice;
+        if (choice == 1)
+        {
+            system("cls");
+            int source;
+
+            cout << "Enter Index of source from which you want to start" << endl;
+            cin >> source;
+
+            shortestPath(source);
+        }
+        if (choice == 0)
+        {
+            flag = false;
+        }
+        if (choice == 2)
+        {
+            system("cls");
+            int source;
+
+            cout << "Enter Index of source from which you want to start" << endl;
+            cin >> source;
+
+            shortestPath_cost(source);
+        }
+        if (choice == 3)
+        {
+            system("cls");
+            primsCost();
+        }
+        if (choice == 4)
+        {
+            system("cls");
+            prims();
+        }
+    }
+    system("cls");
+}
+int main()
+{
+    // reading data from file
+    ifstream fin;
+    fin.open("country_wise_latest.csv");
+    string line, word;
+    vector<string> lineData;
+    int lines = 0;
+    tree *pt = new tree();
+    while (!fin.eof())
+    {
+        // reading data and adding to vector
+        getline(fin, line);
+        stringstream s(line);
+        while (getline(s, word, ','))
+        {
+            lineData.push_back(word);
+        }
+        // type casting duration from string to int
+        stringstream s1(lineData[1]);
+        stringstream s2(lineData[2]);
+        stringstream s3(lineData[3]);
+        stringstream s4(lineData[4]);
+        int total;
+        int death;
+        int recovered;
+        int active;
+
+        s1 >> total;
+        s2 >> death;
+        s3 >> recovered;
+        s4 >> active;
+
+        // adding data to linked list
+        if (lines != 0)
+        {
+            addNode(lineData[0], total, death, recovered, active, lineData[5]);
+        }
+        // clearing vector
+
+        lines++;
+
+        if (lines == 1)
+        {
+
+            pt->country = lineData[0];
+            pt->active = active;
+            pt->death = death;
+            pt->recovered = recovered;
+            pt->total = total;
+        }
+        else
+        {
+            insert(pt, lineData[0], total, death, recovered, active, lineData[5]);
+        }
+        lineData.clear();
+    }
+    // switch to ask user what to do
+    int choice = 0;
+    do
+    {
+        cout << " ===================================================================================" << endl
+             << endl;
+        cout << " 1.Print information about all country carona cases" << endl;
+        cout << "2.Print information about Carona  cases  from a specific country" << endl;
+        cout << "3.Print information about countries having death more than a specific numbers" << endl;
+        cout << "4.Delete countries having death less than a specific numbers" << endl;
+        cout << "==========================================================================================" << endl;
+        cout << "5.Comperative Analysis Of Two countries using Bst (By finding distance between two nodes)" << endl;
+        cout << "6.Print countries w.r.t to No of recovered Cases" << endl;
+        cout << "7.Print data of All countries level-wise using bst" << endl;
+        cout << "8.Compare Stastics of two regions" << endl;
+        cout << "9.Print the pandemic data w.r.t to Active cases (To find No of Vaccination Manufacturing required )" << endl;
+        cout << "10.Check Countries with Emergency or normal Situation of pandemic using Double ended prioty QUEUE " << endl;
+        cout << "=====================================================================================================" << endl;
+        cout << "11.To create Avl tree on recovered cases of region Western Pacific" << endl;
+        cout << "12. To display Avl tree " << endl;
+        cout << "13. To create Heap on active cases of region Americas" << endl;
+        cout << "14. for sorting confirmed cases of all countries" << endl;
+        cout << "15. Searching Node through Hashing" << endl;
+        cout << "16. for searching death number of any coutry" << endl;
+        cout << "17.Switch To Internet Broadcaster Management System" << endl;
+        cout << "Select an option and 0 to exit:" << endl
+             << endl;
+
+        cout << "=======================================================================================" << endl;
+        cin >> choice;
+        switch (choice)
+        {
+        case 16:
+        {
+            system("cls");
+            insertHashing();
+            int d;
+            cout << "Enter the number of death of Node you want to search" << endl;
+            cin >> d;
+            searchHash(d);
+            cout << endl;
+            break;
+        }
+        case 1:
+        {
+            system("cls");
+            print();
+            break;
+        }
+        case 2:
+        {
+            system("cls");
+            string country;
+            cout << "Enter country name:";
+            cin >> country;
+            print(country);
+            break;
+        }
+        case 3:
+        {
+            system("cls");
+            int death;
+            cout << "Enter death number:";
+            cin >> death;
+            printDeathGreater(death);
+            break;
+        }
+        case 4:
+        {
+            system("cls");
+            int death;
+            cout << "Enter death:";
+            cin >> death;
+            deleteLess(death);
+            break;
+        }
+        case 5:
+        {
+            system("cls");
+            string a1, a2;
+            cout << "Enter the name of first country:" << endl;
+            cin >> a1;
+            cout << "Enter the name of first country:" << endl;
+            cin >> a2;
+            tree *p1 = search2(pt, a1);
+            // cout << p1->country << endl;
+
+            tree *p2 = search2(pt, a2);
+            // cout << p2->country << endl;
+
+            if (p1 == NULL)
+            {
+                cout << "Country 1 not found" << endl;
+            }
+            if (p2 == NULL)
+            {
+                cout << "Country 2 not found" << endl;
+            }
+
+            if (p2 != NULL && p1 != NULL)
+            {
+                int a = distanceBtwTwo(pt, p1->total, p2->total);
+                cout << "a:" << a << endl;
+                if (a < 5)
+                {
+
+                    cout << "The distance between Country 1 and Country 2 is relatively small, and they have a similar ratio of total COVID-19 cases and deaths" << endl;
+                    cout << " These countries exhibit a close correlation in their pandemic data " << endl;
+                }
+                else
+                {
+                    cout << "The distance between Country 1 and Country 2 is significant, and they exhibit contrasting ratios of total COVID-19 cases and deaths." << endl;
+                    cout << " These countries have distinct pandemic situations, with notable differences in the severity of the outbreak and its impact on the population." << endl;
+                }
+            }
+            break;
+        }
+        case 10:
+        {
+            system("cls");
+            emergency_Normal_Queue();
+            break;
+        }
+        case 11:
+        {
+            system("cls");
+            Node *p = head;
+            int key = 0;
+            while (p != NULL)
+            {
+                if (p->region == "Western Pacific")
+                {
+                    key = p->recovered;
+                    root = insertNode(root, key);
+                }
+
+                p = p->next;
+            }
+            cout << "Avl tree has created" << endl
+                 << endl;
+
+            break;
+        }
+        case 12:
+            system("cls");
+            cout << "----------AVL TREE--------" << endl;
+            if (root == NULL)
+            {
+                cout << "There is no node yet" << endl;
+            }
+            else
+            {
+                inOrder(root);
+                cout << endl
+                     << endl;
+            }
+            break;
+        case 13:
+        {
+            system("cls");
+            Node *p = head;
+            while (p != NULL)
+            {
+                if (p->region == "Americas")
+                {
+                    insertInHeap(p->active);
+                }
+                p = p->next;
+            }
+            cout << "Heap has created on active cases of region America" << endl
+                 << endl;
+            displayHeapRecord();
+            cout << endl
+                 << endl;
+            break;
+        }
+        case 14:
+        {
+            system("cls");
+            Node *p = head;
+            while (p != NULL)
+            {
+
+                sort[++SortSize] = p->total;
+                p = p->next;
+            }
+            InsertionSort(sort, SortSize);
+
+            break;
+        }
+
+        case 15:
+        {
+            system("cls");
+            int key = 0, index = 0;
+
+            Node *p = head;
+            while (p != NULL)
+            {
+
+                search[++searchSize] = p->death;
+                p = p->next;
+            }
+            InsertionSort(search, searchSize);
+            cout << "Enter key to find in array" << endl;
+            cin >> key;
+            index = binarySearch(search, searchSize, key);
+
+            if (index != -1)
+            {
+                cout << "Target found at index " << index << endl;
+            }
+            else
+            {
+                cout << "Target not found in the array" << endl;
+            }
+
+            break;
+        }
+        case 7:
+        {
+            system("cls");
+            print_levelWise(pt);
+            break;
+        }
+        case 8:
+        {
+            system("cls");
+            string r1, r2;
+            cout << "Enter Region 1:";
+            cin >> r1;
+            Stack_Region(r1, myStack1);
+            cout << "Enter Region 2:";
+            cin >> r2;
+            Stack_Region(r2, myStack2);
+            Statistic_Region(myStack1, array1);
+            Statistic_Region(myStack2, array2);
+            cout << "---------Region 1-----------" << endl;
+            display_array(array1);
+            cout << "---------Region 2-----------" << endl;
+            display_array(array2);
+            cout << "---------Region 1 vs Region 2-----------" << endl;
+            Compare(array1, array2);
+            break;
+        }
+        case 9:
+        {
+            system("cls");
+            linked_to_queue();
+            priority_activeCases();
+            break;
+        }
+        case 6:
+        {
+            system("cls");
+            recovery();
+            break;
+        }
+        case 17:
+        {
+            system("cls");
+            BroadcasterManagement();
+        }
+        default:
+        {
+            cout << "Invalid choice!" << endl;
+        }
+        }
+    } while (choice != 0);
+    return 0;
+}
