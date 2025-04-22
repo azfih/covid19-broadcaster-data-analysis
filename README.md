@@ -100,7 +100,7 @@ This component analyzes telecommunications data to optimize network deployment.
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/covid19-broadcaster-data-analysis.git
+   git clone https://github.com/azfih/covid19-broadcaster-data-analysis.git
    ```
 
 2. Compile the program:
