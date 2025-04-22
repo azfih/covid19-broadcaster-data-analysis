@@ -126,9 +126,9 @@ This component analyzes telecommunications data to optimize network deployment.
 
 ## Contributors
 
-- [Your Name]
-- [Team Member 2]
-- [Team Member 3]
+- Hifza Rafiq
+- Mehak Afzal
+- Abdullah Zain Haider
 
 ---
 
